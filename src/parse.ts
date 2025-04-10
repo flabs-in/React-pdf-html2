@@ -46,7 +46,7 @@ export const convertRule = (
             console.warn(
               `react-pdf doesn't support fontFamily lists like "${valueString}". Reducing to "${reduced}".`
             );
-            valueString = reduced;
+            return style;
           }
         } else if (!supportedStyles.includes(property)) {
           if (
@@ -61,9 +61,11 @@ export const convertRule = (
               property,
               value,
             });
+            return style;
           }
         }
 
+        if (property == 'border' && valueString == 'none') valueString = '0';
         style[property as keyof HtmlStyle] = valueString;
       }
       return style;

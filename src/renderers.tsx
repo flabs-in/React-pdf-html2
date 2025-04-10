@@ -28,6 +28,7 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     (combined, tableStyle) => Object.assign(combined, tableStyle),
     {} as HtmlStyle
   );
+
   const baseStyles: HtmlStyle = {
     border: tableStyles.border,
     borderColor: tableStyles.borderColor,
@@ -57,7 +58,10 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     }
   }
 
-  return <View style={[baseStyles, ...style, overrides]}>{children}</View>;
+  const finalStyles = Object.assign({}, baseStyles, ...style, overrides);
+  if (!finalStyles.width) finalStyles.flex = 1;
+  delete finalStyles.height;
+  return <View style={finalStyles}>{children}</View>;
 };
 
 const renderers: HtmlRenderers = {
@@ -128,9 +132,18 @@ const renderers: HtmlRenderers = {
       {children}
     </Link>
   ),
-  img: ({ style, element }) => (
-    <Image style={style} src={element.attributes.src} />
-  ),
+  img: ({ style, element }) => {
+    const { width, height } = element._rawAttrs;
+    const dimensions: any = {};
+    if (width) {
+      dimensions.width = width;
+    }
+    if (height) {
+      dimensions.height = height;
+    }
+    const finalStyles = Object.assign({}, ...style, dimensions);
+    return <Image style={finalStyles} src={element.attributes.src} />;
+  },
   table: ({ element, style, children }) => {
     const tableStyles = element.style.reduce(
       (combined, tableStyle) => Object.assign(combined, tableStyle),
@@ -144,14 +157,19 @@ const renderers: HtmlRenderers = {
       overrides.borderLeftWidth = 0;
       overrides.borderTopWidth = 0;
     }
-
-    return <View style={[...style, overrides]}>{children}</View>;
+    const finalStyles = Object.assign({}, ...style, overrides);
+    delete finalStyles.height;
+    return <View style={finalStyles}>{children}</View>;
   },
-  tr: ({ style, children }) => (
-    <View wrap={false} style={style}>
-      {children}
-    </View>
-  ),
+  tr: ({ style, children }) => {
+    const finalStyles = Object.assign({}, ...style);
+    delete finalStyles.height;
+    return (
+      <View wrap={true} style={finalStyles}>
+        {children}
+      </View>
+    );
+  },
   br: ({ style }) => (
     <Text wrap={false} style={style}>
       {'\n'}
