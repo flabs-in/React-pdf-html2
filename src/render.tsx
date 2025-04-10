@@ -286,7 +286,7 @@ const renderHtml = (
   } = {}
 ): ReactElement => {
   const defaultFontSize = 10;
-  const fontSizeStyle = { fontSize: defaultFontSize };
+  const fontSizeStyle: any = { fontSize: defaultFontSize };
   const styles = options.style
     ? Array.isArray(options.style)
       ? options.style

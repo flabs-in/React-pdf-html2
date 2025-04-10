@@ -133,7 +133,7 @@ const renderers: HtmlRenderers = {
     </Link>
   ),
   img: ({ style, element }) => {
-    const { width, height } = element._rawAttrs;
+    const { width, height } = element.attributes;
     const dimensions: any = {};
     if (width) {
       dimensions.width = width;
