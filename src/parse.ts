@@ -46,8 +46,8 @@ export const convertRule = (
             console.warn(
               `react-pdf doesn't support fontFamily lists like "${valueString}". Reducing to "${reduced}".`
             );
-            return style;
           }
+          return style;
         } else if (!supportedStyles.includes(property)) {
           if (
             (property === 'background' &&
