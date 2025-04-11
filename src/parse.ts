@@ -65,6 +65,72 @@ export const convertRule = (
           }
         }
 
+        if (property.startsWith('border')) {
+          if (typeof valueString === 'string' && valueString.trim() !== '') {
+            const borderParts = valueString.split(' ').filter(Boolean);
+
+            const widthRegex = /^\d+(\.\d+)?(px|pt|em|rem|%)?$/i;
+            const styleRegex =
+              /^(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)$/i;
+            const colorRegex = /^#|rgb|rgba|hsl|hsla|[a-zA-Z]+$/;
+
+            let width = '1px';
+            let style = 'solid';
+            let color = 'black';
+
+            let explicitNone = false;
+
+            if (borderParts.length === 3) {
+              borderParts.forEach((part) => {
+                const partLower = part.toLowerCase();
+                if (widthRegex.test(partLower)) {
+                  width = part;
+                } else if (styleRegex.test(partLower)) {
+                  if (partLower === 'none' || partLower === 'hidden') {
+                    explicitNone = true;
+                  } else {
+                    style = partLower;
+                  }
+                } else if (colorRegex.test(part)) {
+                  color = part;
+                }
+              });
+            } else if (borderParts.length === 1) {
+              const part = borderParts[0];
+              const partLower = part.toLowerCase();
+
+              if (widthRegex.test(partLower)) {
+                width = part;
+              } else if (styleRegex.test(partLower)) {
+                if (partLower === 'none' || partLower === 'hidden') {
+                  explicitNone = true;
+                } else {
+                  style = partLower;
+                }
+              } else if (colorRegex.test(part)) {
+                color = part;
+              } else {
+                console.warn(
+                  `${source}: Unrecognized border value "${valueString}"`
+                );
+              }
+            } else {
+              console.warn(
+                `${source}: Unexpected border format "${valueString}"`
+              );
+            }
+
+            if (explicitNone) {
+              return style; // ✅ do not apply this style at all
+            }
+
+            valueString = `${width} ${style} ${color}`;
+          } else {
+            console.warn(`${source}: Invalid border value "${valueString}"`);
+            return style;
+          }
+        }
+
         if (property == 'border' && valueString == 'none') valueString = '0';
         style[property as keyof HtmlStyle] = valueString;
       }
