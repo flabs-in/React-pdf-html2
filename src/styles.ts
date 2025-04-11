@@ -111,6 +111,7 @@ export const createHtmlStylesheet = <T extends HtmlStyles>(
     li: {
       display: 'flex',
       flexDirection: 'row',
+      paddingRight: 25,
     },
     li_bullet: {
       width: 30,

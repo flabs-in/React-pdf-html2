@@ -38,14 +38,14 @@ export const convertRule = (
     }))
     .reduce((style, { property, value }: Declaration) => {
       let valueString = cssTree.generate(value);
-      if (property && value) {
-        if (property === 'fontFamily') {
+      if (property && value !== undefined) {
+        if (property == 'fontFamily') {
           valueString = valueString.replace(/["']+/g, '');
           if (valueString.includes(',')) {
             const reduced = valueString.split(',', 2)[0];
-            console.warn(
-              `react-pdf doesn't support fontFamily lists like "${valueString}". Reducing to "${reduced}".`
-            );
+            // console.warn(
+            //   `react-pdf doesn't support fontFamily lists like "${valueString}". Reducing to "${reduced}".`
+            // );
           }
           return style;
         } else if (!supportedStyles.includes(property)) {
@@ -57,18 +57,16 @@ export const convertRule = (
           ) {
             property = 'backgroundColor';
           } else {
-            console.warn(`${source}: Found unsupported style "${property}"`, {
-              property,
-              value,
-            });
+            // console.warn(`${source}: Found unsupported style "${property}"`, {
+            //   property,
+            //   value,
+            // });
             return style;
           }
         }
-
         if (property.startsWith('border')) {
           if (typeof valueString === 'string' && valueString.trim() !== '') {
             const borderParts = valueString.split(' ').filter(Boolean);
-
             const widthRegex = /^\d+(\.\d+)?(px|pt|em|rem|%)?$/i;
             const styleRegex =
               /^(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)$/i;
@@ -95,26 +93,9 @@ export const convertRule = (
                   color = part;
                 }
               });
-            } else if (borderParts.length === 1) {
-              const part = borderParts[0];
-              const partLower = part.toLowerCase();
-
-              if (widthRegex.test(partLower)) {
-                width = part;
-              } else if (styleRegex.test(partLower)) {
-                if (partLower === 'none' || partLower === 'hidden') {
-                  explicitNone = true;
-                } else {
-                  style = partLower;
-                }
-              } else if (colorRegex.test(part)) {
-                color = part;
-              } else {
-                console.warn(
-                  `${source}: Unrecognized border value "${valueString}"`
-                );
-              }
-            } else {
+              valueString = `${width} ${style} ${color}`;
+            }
+            {
               console.warn(
                 `${source}: Unexpected border format "${valueString}"`
               );
@@ -123,15 +104,13 @@ export const convertRule = (
             if (explicitNone) {
               return style; // ✅ do not apply this style at all
             }
-
-            valueString = `${width} ${style} ${color}`;
           } else {
             console.warn(`${source}: Invalid border value "${valueString}"`);
             return style;
           }
         }
 
-        if (property == 'border' && valueString == 'none') valueString = '0';
+        if (property == 'border' && valueString == 'none') valueString = '0px';
         style[property as keyof HtmlStyle] = valueString;
       }
       return style;

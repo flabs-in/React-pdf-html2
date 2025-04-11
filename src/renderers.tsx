@@ -21,9 +21,14 @@ export const renderInline: HtmlRenderer = ({ style, children }) => (
 
 export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   const table = element.closest('table') as HtmlElement | undefined;
+  const tableAttributes = table?.attributes as any;
   if (!table) {
     throw new Error('td element rendered outside of a table');
   }
+  const combinedStyle = style.reduce(
+    (acc, current) => Object.assign(acc, current),
+    {} as HtmlStyle
+  );
   const tableStyles = table.style.reduce(
     (combined, tableStyle) => Object.assign(combined, tableStyle),
     {} as HtmlStyle
@@ -39,7 +44,7 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     (tableStyles as any).borderSpacing &&
     (tableStyles as any).borderCollapse !== 'collapse'
   ) {
-    baseStyles.width = tableStyles.borderWidth;
+    baseStyles.borderWidth = tableStyles.borderWidth;
     baseStyles.margin = (tableStyles as any).borderSpacing;
   } else {
     baseStyles.borderRightWidth = 0;
@@ -50,17 +55,31 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     }
   }
 
+  if (tableAttributes?.border == 0) {
+    baseStyles.borderRightWidth = '0px';
+    baseStyles.borderBottomWidth = '0px';
+    baseStyles.borderTopWidth = '0px';
+    baseStyles.borderLeftWidth = '0px';
+  }
   const overrides: HtmlStyle = {};
-  if (element.attributes && element.attributes.colspan) {
-    const colspan = parseInt(element.attributes.colspan, 10);
-    if (!isNaN(colspan)) {
-      overrides.flexBasis = colspan;
-    }
+  // if (element.attributes && element.attributes.colspan) {
+  //   const colspan = parseInt(element.attributes.colspan, 10);
+  //   if (!isNaN(colspan)) {
+  //     overrides.flexBasis = colspan;
+  //   }
+  // }
+  if (combinedStyle.textAlign == 'center') {
+    overrides.alignItems = 'center';
   }
 
-  const finalStyles = Object.assign({}, baseStyles, ...style, overrides);
+  if (combinedStyle.verticalAlign == 'center') {
+    overrides.justifyContent = 'center';
+  }
+
+  const finalStyles = Object.assign({}, baseStyles, combinedStyle, overrides);
   if (!finalStyles.width) finalStyles.flex = 1;
   delete finalStyles.height;
+
   return <View style={finalStyles}>{children}</View>;
 };
 
@@ -119,7 +138,6 @@ const renderers: HtmlRenderers = {
       bullet = <Text>•</Text>;
       // }
     }
-
     return (
       <View style={style}>
         {bullet && <View style={bulletStyles}>{bullet}</View>}
@@ -149,6 +167,7 @@ const renderers: HtmlRenderers = {
       (combined, tableStyle) => Object.assign(combined, tableStyle),
       {} as HtmlStyle
     );
+    const { border } = element.attributes as any;
     const overrides: HtmlStyle = {};
     if (
       !(tableStyles as any).borderSpacing ||
@@ -156,6 +175,17 @@ const renderers: HtmlRenderers = {
     ) {
       overrides.borderLeftWidth = 0;
       overrides.borderTopWidth = 0;
+    }
+
+    if (border == 0) {
+      overrides.borderWidth = '0px';
+      overrides.borderStyle = 'none';
+    }
+    const borderColor = style.find(
+      (s) => s.borderColor && s.borderColor !== 'gray'
+    )?.borderColor;
+    if (borderColor) {
+      overrides.borderColor = borderColor;
     }
     const finalStyles = Object.assign({}, ...style, overrides);
     delete finalStyles.height;
@@ -171,7 +201,7 @@ const renderers: HtmlRenderers = {
     );
   },
   br: ({ style }) => (
-    <Text wrap={false} style={style}>
+    <Text wrap={true} style={style}>
       {'\n'}
     </Text>
   ),
