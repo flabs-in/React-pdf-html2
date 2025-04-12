@@ -160,7 +160,20 @@ const renderers: HtmlRenderers = {
       dimensions.height = height;
     }
     const finalStyles = Object.assign({}, ...style, dimensions);
-    return <Image style={finalStyles} src={element.attributes.src} />;
+    return (
+      <Image
+        style={finalStyles}
+        source={{
+          uri: element.attributes.src,
+          body: null,
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Access-Control-Allow-Origin': '*',
+          },
+        }}
+      />
+    );
   },
   table: ({ element, style, children }) => {
     const tableStyles = element.style.reduce(
