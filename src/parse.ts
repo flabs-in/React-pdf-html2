@@ -9,6 +9,7 @@ import { Tag } from './tags';
 import cssTree, { Block, Declaration, List, Rule, StyleSheet } from 'css-tree';
 import supportedStyles from './supportedStyles';
 import { HtmlStyle, HtmlStyles } from './styles';
+import { replaceText } from './htmlOverrides';
 const camelize = require('camelize');
 
 export type HtmlContent = (HtmlElement | string)[];
@@ -197,7 +198,8 @@ export const convertNode = (node: HTMLNode): HtmlElement | string => {
 const parseHtml = (
   text: string
 ): { stylesheets: HtmlStyles[]; rootElement: HtmlElement } => {
-  const html = parse(text, { comment: false });
+  const overideText = replaceText(text);
+  const html = parse(overideText, { comment: false });
   const stylesheets = html
     .querySelectorAll('style')
     .map((styleNode) =>
