@@ -25,14 +25,19 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   if (!table) {
     throw new Error('td element rendered outside of a table');
   }
+  const columnIndex = element.indexOfType;
   const combinedStyle = style.reduce(
     (acc, current) => Object.assign(acc, current),
     {} as HtmlStyle
   );
+
   const tableStyles = table.style.reduce(
     (combined, tableStyle) => Object.assign(combined, tableStyle),
     {} as HtmlStyle
   );
+
+  const colWidths = tableStyles.colWidths || [];
+  const columnWidth = colWidths[columnIndex];
 
   const baseStyles: HtmlStyle = {
     border: tableStyles.border,
@@ -40,6 +45,7 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     borderWidth: tableStyles.borderWidth,
     borderStyle: tableStyles.borderStyle,
   };
+
   if (
     (tableStyles as any).borderSpacing &&
     (tableStyles as any).borderCollapse !== 'collapse'
@@ -61,19 +67,18 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     baseStyles.borderTopWidth = '0px';
     baseStyles.borderLeftWidth = '0px';
   }
+
   const overrides: HtmlStyle = {};
-  // if (element.attributes && element.attributes.colspan) {
-  //   const colspan = parseInt(element.attributes.colspan, 10);
-  //   if (!isNaN(colspan)) {
-  //     overrides.flexBasis = colspan;
-  //   }
-  // }
   if (combinedStyle.textAlign == 'center') {
     overrides.alignItems = 'center';
   }
 
   if (combinedStyle.verticalAlign == 'center') {
     overrides.justifyContent = 'center';
+  }
+
+  if (columnWidth) {
+    overrides.width = columnWidth;
   }
 
   const finalStyles = Object.assign({}, baseStyles, combinedStyle, overrides);
@@ -201,8 +206,31 @@ const renderers: HtmlRenderers = {
       overrides.borderColor = borderColor;
     }
     const finalStyles = Object.assign({}, ...style, overrides);
+    if (!finalStyles.width || parseFloat(finalStyles.width) > 100) {
+      finalStyles.width = '100%';
+    }
     delete finalStyles.height;
     return <View style={finalStyles}>{children}</View>;
+  },
+  colgroup: ({ element, children }) => {
+    const cols = children as any;
+    const colWidths = cols.map((col: any) => {
+      const style = col?.props?.style || '';
+      const widthStyle = style.find((s: any) => s.hasOwnProperty('width'));
+      if (widthStyle) return widthStyle.width;
+      return undefined;
+    });
+
+    const table = element.closest('table') as HtmlElement | undefined;
+    if (table) {
+      if (Array.isArray(table.style)) {
+        table.style.push({ colWidths });
+      } else {
+        table.style = [{ colWidths }];
+      }
+    }
+
+    return <></>; // don't render anything
   },
   tr: ({ style, children }) => {
     const finalStyles = Object.assign({}, ...style);

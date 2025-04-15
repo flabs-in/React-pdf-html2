@@ -26,40 +26,40 @@ export const createHtmlStylesheet = <T extends HtmlStyles>(
     },
     h1: {
       fontSize: em(2),
-      marginVertical: em(0.67, em(2)),
+      // marginVertical: em(0.67, em(2)),
       fontWeight: 'bold',
     },
     h2: {
       fontSize: em(1.5),
-      marginVertical: em(0.83, em(1.5)),
+      // marginVertical: em(0.83, em(1.5)),
       fontWeight: 'bold',
     },
     h3: {
       fontSize: em(1.17),
-      marginVertical: em(1, em(1.17)),
+      // marginVertical: em(1, em(1.17)),
       fontWeight: 'bold',
     },
     h4: {
       fontSize: em(1),
-      marginVertical: em(1.33, em(1)),
+      // marginVertical: em(1.33, em(1)),
       fontWeight: 'bold',
     },
     h5: {
       fontSize: em(0.83),
-      marginVertical: em(1.67, em(0.83)),
+      // marginVertical: em(1.67, em(0.83)),
       fontWeight: 'bold',
     },
     h6: {
       fontSize: em(0.67),
-      marginVertical: em(2.33, em(0.67)),
+      // marginVertical: em(2.33, em(0.67)),
       fontWeight: 'bold',
     },
     p: {
       fontSize: em(1),
-      marginVertical: em(1),
+      // marginVertical: em(1),
     },
     blockquote: {
-      marginVertical: em(1),
+      // marginVertical: em(1),
       marginHorizontal: 30,
     },
     hr: {
@@ -103,10 +103,10 @@ export const createHtmlStylesheet = <T extends HtmlStyles>(
       textDecoration: 'underline',
     },
     ul: {
-      marginVertical: em(1),
+      marginVertical: em(0.5),
     },
     ol: {
-      marginVertical: em(1),
+      marginVertical: em(0.5),
     },
     li: {
       display: 'flex',
