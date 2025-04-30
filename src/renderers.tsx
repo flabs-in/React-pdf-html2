@@ -213,7 +213,8 @@ const renderers: HtmlRenderers = {
     return <View style={finalStyles}>{children}</View>;
   },
   colgroup: ({ element, children }) => {
-    const cols = children as any;
+    let cols = children as any;
+    cols = Array.isArray(cols) ? cols : [cols];
     const colWidths = cols.map((col: any) => {
       const style = col?.props?.style || '';
       const widthStyle = style.find((s: any) => s.hasOwnProperty('width'));
