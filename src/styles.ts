@@ -56,6 +56,9 @@ export const createHtmlStylesheet = <T extends HtmlStyles>(
     },
     p: {
       fontSize: em(1),
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       // marginVertical: em(1),
     },
     blockquote: {
