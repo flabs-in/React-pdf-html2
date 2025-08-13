@@ -15,9 +15,12 @@ export const renderBlock: HtmlRenderer = ({ style, children }) => (
   <View style={style}>{children}</View>
 );
 
-export const renderInline: HtmlRenderer = ({ style, children }) => (
-  <Text style={style}>{children}</Text>
-);
+export const renderInline: HtmlRenderer = ({ style, children }) => {
+  if (style?.find((e) => e.textAlign == 'center')) {
+    style?.push({ justifyContent: 'center' });
+  }
+  return <Text style={style}>{children}</Text>;
+};
 
 export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   const table = element.closest('table') as HtmlElement | undefined;
