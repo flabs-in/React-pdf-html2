@@ -165,6 +165,9 @@ export const renderElement = (
     }
   }
 
+  // if (element.tag === 'p') {
+  //   console.log({ style: element.style });
+  // }
   return (
     <Element
       key={index}

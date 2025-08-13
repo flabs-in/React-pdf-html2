@@ -11,9 +11,12 @@ export const renderPassThrough: React.FC<React.PropsWithChildren<any>> = ({
   children,
 }) => children;
 
-export const renderBlock: HtmlRenderer = ({ style, children }) => (
-  <View style={style}>{children}</View>
-);
+export const renderBlock: HtmlRenderer = ({ style, children }) => {
+  if (style?.find((e) => e.textAlign == 'center')) {
+    style?.push({ justifyContent: 'center' });
+  }
+  return <View style={style}>{children}</View>;
+};
 
 export const renderInline: HtmlRenderer = ({ style, children }) => {
   if (style?.find((e) => e.textAlign == 'center')) {
