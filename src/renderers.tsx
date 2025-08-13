@@ -17,7 +17,6 @@ export const renderBlock: HtmlRenderer = ({ style, children }) => {
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'center',
-      width: '100%',
     });
   }
   return <View style={style}>{children}</View>;
@@ -29,7 +28,6 @@ export const renderInline: HtmlRenderer = ({ style, children }) => {
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'center',
-      width: '100%',
     });
   }
   return <Text style={style}>{children}</Text>;
