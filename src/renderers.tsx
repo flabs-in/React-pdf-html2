@@ -13,14 +13,24 @@ export const renderPassThrough: React.FC<React.PropsWithChildren<any>> = ({
 
 export const renderBlock: HtmlRenderer = ({ style, children }) => {
   if (style?.find((e) => e.textAlign == 'center')) {
-    style?.push({ justifyContent: 'center' });
+    style?.push({
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      width: '100%',
+    });
   }
   return <View style={style}>{children}</View>;
 };
 
 export const renderInline: HtmlRenderer = ({ style, children }) => {
   if (style?.find((e) => e.textAlign == 'center')) {
-    style?.push({ justifyContent: 'center' });
+    style?.push({
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      width: '100%',
+    });
   }
   return <Text style={style}>{children}</Text>;
 };
