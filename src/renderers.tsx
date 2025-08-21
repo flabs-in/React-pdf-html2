@@ -33,13 +33,15 @@ export const renderInline: HtmlRenderer = ({ style, children }) => {
   return <Text style={style}>{children}</Text>;
 };
 
+let spanIndex = 0;
+
 export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   const table = element.closest('table') as HtmlElement | undefined;
+  const colSpan = parseInt(element.attributes.colspan) || 1;
   const tableAttributes = table?.attributes as any;
   if (!table) {
     throw new Error('td element rendered outside of a table');
   }
-  const columnIndex = element.indexOfType;
   const combinedStyle = style.reduce(
     (acc, current) => Object.assign(acc, current),
     {} as HtmlStyle
@@ -51,7 +53,16 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   );
 
   const colWidths = tableStyles.colWidths || [];
-  const columnWidth = colWidths[columnIndex];
+  let columnWidth = 0;
+  if (colWidths?.length > 0) {
+    for (let i = 0; i < colSpan; i++) {
+      columnWidth += parseInt(colWidths[spanIndex + i]) || 0;
+    }
+    spanIndex += colSpan;
+    if (spanIndex == colWidths?.length) {
+      spanIndex = 0;
+    }
+  }
 
   const baseStyles: HtmlStyle = {
     border: tableStyles.border,
@@ -92,7 +103,7 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   }
 
   if (columnWidth) {
-    overrides.width = columnWidth;
+    overrides.width = `${columnWidth}%`;
   }
 
   const finalStyles = Object.assign({}, baseStyles, combinedStyle, overrides);
@@ -231,18 +242,41 @@ const renderers: HtmlRenderers = {
   colgroup: ({ element, children }) => {
     let cols = children as any;
     cols = Array.isArray(cols) ? cols : [cols];
-    const colWidths = cols.map((col: any) => {
-      const style = col?.props?.style || '';
-      const widthStyle = style.find((s: any) => s.hasOwnProperty('width'));
-      if (widthStyle) return widthStyle.width;
-      return undefined;
-    });
-
+    const colWidths = cols
+      .map((col: any) => {
+        const style = col?.props?.style || '';
+        const widthStyle = style.find((s: any) => s.hasOwnProperty('width'));
+        if (widthStyle) {
+          return parseInt(widthStyle.width);
+        }
+        return undefined;
+      })
+      .filter((width: any) => width !== undefined);
     const table = element.closest('table') as HtmlElement | undefined;
-    if (table) {
+    if (table && colWidths?.length > 0) {
+      const totalWidth = colWidths.reduce(
+        (acc: any, curr: any) => acc + curr,
+        0
+      );
       if (Array.isArray(table.style)) {
+        const diff = 100 - totalWidth;
+        let idx = 0;
+        while (idx < colWidths.length && colWidths[idx] + diff < 0) {
+          idx++;
+        }
+        if (idx < colWidths.length) {
+          colWidths[idx] += diff;
+        }
         table.style.push({ colWidths });
       } else {
+        const diff = 100 - totalWidth;
+        let idx = 0;
+        while (idx < colWidths.length && colWidths[idx] + diff < 0) {
+          idx++;
+        }
+        if (idx < colWidths.length) {
+          colWidths[idx] += diff;
+        }
         table.style = [{ colWidths }];
       }
     }
