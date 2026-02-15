@@ -35,13 +35,48 @@ export const renderInline: HtmlRenderer = ({ style, children }) => {
 
 let spanIndex = 0;
 
+const rowSpanMap: Map<string, { remaining: number; colIndex: number }[]> =
+  new Map();
+
+const getTableId = (table: HtmlElement): string => {
+  return table.attributes.id || `table-${table.indexOfType}`;
+};
+
 export const renderCell: HtmlRenderer = ({ style, element, children }) => {
   const table = element.closest('table') as HtmlElement | undefined;
   const colSpan = parseInt(element.attributes.colspan) || 1;
+  const rowSpan = parseInt(element.attributes.rowspan) || 1;
   const tableAttributes = table?.attributes as any;
   if (!table) {
     throw new Error('td element rendered outside of a table');
   }
+
+  const tableId = getTableId(table);
+  const row = element.parentNode as HtmlElement;
+  const rowIndex = row?.indexOfType || 0;
+
+  if (!rowSpanMap.has(tableId)) {
+    rowSpanMap.set(tableId, []);
+  }
+  const spanningCells = rowSpanMap.get(tableId)!;
+
+  spanningCells.forEach((cell) => {
+    if (cell.remaining > 0) {
+      cell.remaining--;
+    }
+  });
+  rowSpanMap.set(
+    tableId,
+    spanningCells.filter((cell) => cell.remaining > 0)
+  );
+
+  if (rowSpan > 1) {
+    spanningCells.push({
+      remaining: rowSpan - 1,
+      colIndex: element.indexOfType,
+    });
+  }
+
   const combinedStyle = style.reduce(
     (acc, current) => Object.assign(acc, current),
     {} as HtmlStyle
@@ -106,9 +141,21 @@ export const renderCell: HtmlRenderer = ({ style, element, children }) => {
     overrides.width = `${columnWidth}%`;
   }
 
+  if (rowSpan > 1) {
+    const rowHeight = tableStyles.rowHeight || 20;
+    const calculatedHeight =
+      typeof rowHeight === 'number'
+        ? rowHeight * rowSpan
+        : parseFloat(rowHeight) * rowSpan;
+    overrides.minHeight = calculatedHeight;
+    overrides.position = 'relative';
+  }
+
   const finalStyles = Object.assign({}, baseStyles, combinedStyle, overrides);
   if (!finalStyles.width) finalStyles.flex = 1;
-  delete finalStyles.height;
+  if (rowSpan <= 1) {
+    delete finalStyles.height;
+  }
 
   return <View style={finalStyles}>{children}</View>;
 };
@@ -208,6 +255,9 @@ const renderers: HtmlRenderers = {
     );
   },
   table: ({ element, style, children }) => {
+    const tableId = getTableId(element);
+    rowSpanMap.delete(tableId);
+
     const tableStyles = element.style.reduce(
       (combined, tableStyle) => Object.assign(combined, tableStyle),
       {} as HtmlStyle
@@ -283,11 +333,20 @@ const renderers: HtmlRenderers = {
 
     return <></>; // don't render anything
   },
-  tr: ({ style, children }) => {
+  tr: ({ style, element, children }) => {
+    const table = element.closest('table') as HtmlElement | undefined;
+    const tableId = table ? getTableId(table) : '';
+    const spanningCells = rowSpanMap.get(tableId) || [];
+
     const finalStyles = Object.assign({}, ...style);
-    delete finalStyles.height;
+
+    const hasSpanningCells = spanningCells.some((cell) => cell.remaining > 0);
+    if (!hasSpanningCells) {
+      delete finalStyles.height;
+    }
+
     return (
-      <View wrap={true} style={finalStyles}>
+      <View wrap={false} style={finalStyles}>
         {children}
       </View>
     );
