@@ -102,6 +102,10 @@ export const createHtmlStylesheet = <T extends HtmlStyles>(
     code: {
       // fontFamily: 'monospace',
     },
+    sup: {
+      fontSize: em(0.83),
+      verticalAlign: 'super',
+    },
     a: {
       textDecoration: 'underline',
     },

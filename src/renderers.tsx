@@ -297,6 +297,11 @@ const renderers: HtmlRenderers = {
       {'\n'}
     </Text>
   ),
+  sup: ({ style, children }) => (
+    <Text style={[...style, { verticalAlign: 'super' } as HtmlStyle]}>
+      {children}
+    </Text>
+  ),
   td: renderCell,
   th: renderCell,
 };
